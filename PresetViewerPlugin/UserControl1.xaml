@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PresetViewerPlugin"
              xmlns:kcvc="http://schemes.grabacr.net/winfx/2015/kancolleviewer/controls"
-             xmlns:controls="clr-namespace:MetroTrilithon.Controls;assembly=MetroTrilithon.Desktop"
+             xmlns:controls="clr-namespace:MetroTrilithon.UI.Controls;assembly=MetroTrilithon.Desktop"
              xmlns:conv="clr-namespace:Grabacr07.KanColleViewer.Converters;assembly=KanColleViewer.Controls"
              xmlns:s="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 

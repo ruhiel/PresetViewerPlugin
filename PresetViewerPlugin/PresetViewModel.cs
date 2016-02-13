@@ -140,9 +140,10 @@ namespace PresetViewerPlugin
             {
                 lock (syncObject)
                 {
-                    using (var stream = File.OpenWrite(FilePath))
+                    using (var stream = new MemoryStream())
                     {
                         serializer.WriteObject(stream, PresetDeck);
+                        File.WriteAllText(FilePath, Encoding.UTF8.GetString(stream.ToArray()), new UTF8Encoding());
                     }
                 }
             }
@@ -195,9 +196,8 @@ namespace PresetViewerPlugin
                     return serializer.ReadObject(stream) as preset_deck;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                String s = e.ToString();
             }
 
             return null;

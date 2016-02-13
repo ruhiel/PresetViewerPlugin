@@ -15,6 +15,7 @@ namespace PresetViewerPlugin
     public class PresetViewModel : ViewModel
     {
         private const int MaxPresetNum = 8;
+        private object syncObject = new object();
 
         static string FilePath => "PresetViewPlugin.txt";
 
@@ -43,32 +44,14 @@ namespace PresetViewerPlugin
             {
                 if (_PresetDeck == null)
                 {
-                    try
-                    {
-                        using (var stream = File.OpenRead(FilePath))
-                        {
-                            _PresetDeck = serializer.ReadObject(stream) as preset_deck;
-                        }
-                    } catch(Exception) {
-                        // 必須の機能でもないので握りつぶし
-                    }
 
+                    _PresetDeck = readFromFile();
                 }
                 return _PresetDeck;
             }
             set
             {
                 _PresetDeck = value;
-                
-                try
-                {
-                    using (var stream = File.OpenWrite(FilePath))
-                    {
-                        serializer.WriteObject(stream, _PresetDeck);
-                    }
-                } catch(Exception) {
-                   // 必須の機能でもないので握りつぶし
-                } 
                 
                 UpdatePresetFleet();
             }
@@ -119,6 +102,8 @@ namespace PresetViewerPlugin
 
             KanColleClient.Current.Homeport.Organization
                 .Subscribe(nameof(Organization.Ships), this.UpdatePresetFleet);
+
+            PresetDeck = readFromFile();
         }
 
         #region _PresetFleet
@@ -150,6 +135,21 @@ namespace PresetViewerPlugin
         private void UpdatePresetFleet()
         {
             if (PresetDeck == null || !PresetDeck.api_data.api_deck.ContainsKey(SelectPreset)) return;
+
+            try
+            {
+                lock (syncObject)
+                {
+                    using (var stream = File.OpenWrite(FilePath))
+                    {
+                        serializer.WriteObject(stream, PresetDeck);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // 必須の機能でもないので握りつぶし
+            }
 
             Ship[] presets = new Ship[] { };
             var deck = PresetDeck.api_data.api_deck[SelectPreset].api_ship
@@ -184,6 +184,23 @@ namespace PresetViewerPlugin
             }
 
             DeckNames = names;
+        }
+
+        private preset_deck readFromFile()
+        {
+            try
+            {
+                using (var stream = File.OpenRead(FilePath))
+                {
+                    return serializer.ReadObject(stream) as preset_deck;
+                }
+            }
+            catch (Exception e)
+            {
+                String s = e.ToString();
+            }
+
+            return null;
         }
 
         public void SetDeck(String number)
